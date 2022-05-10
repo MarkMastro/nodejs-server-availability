@@ -26,52 +26,59 @@ const returnServerPriority = (serverUrl) => {
     }
   }
 }
+//return the url with the lowest priority
+const getLowestOnlineServerPriority = (onlineServers) => {
+  let lowestPriorityServer = onlineServers[0];
 
-const getLowestPriority = (goodServers) => {
-  const lowestPriority = goodServers[0].url;
-  for(let goodServer of goodServers) {
-    lowestPriority > goodServer.priority ? lowestPriority = goodServer.url : null;
+  for(let onlineServer of onlineServers) {
+    onlineServer.priority < lowestPriorityServer.priority ? lowestPriorityServer = onlineServer: null;
   }
-  return lowestPriority;
+  return lowestPriorityServer.url;
 }
-  const findServer = () => {
-    console.log("find")
-    const goodServers = [];
-    Promise.allSettled([
-        axios.get(serverArray[0].url),
-        axios.get(serverArray[1].url),
-        axios.get(serverArray[2].url),
-        axios.get(serverArray[3].url),
-    ]).then((all) => {
-        for(let request of all) {
-          if(request.reason){
-              null          
-          } else if(request.value.status <=299 && request.value.status >= 200) {
-            goodServers.push(
-              {
-                "url" : request.value.config.url,
-                "priority": returnServerPriority(request.value.config.url)
-            })
-          } else{
-            null
-          }
-        }
 
-        console.log(goodServers)
+const getOnlineServers = async () => {
+  const onlineServers = [];
+  const settledServerCalls = Promise.allSettled([
+      axios.get(serverArray[0].url),
+      axios.get(serverArray[1].url),
+      axios.get(serverArray[2].url),
+      axios.get(serverArray[3].url),
+  ])
+  
+  const status = await settledServerCalls
+  for(let request of status) {
+    if(request.reason){
+        null;          
+    } else if(request.value.status <=299 && request.value.status >= 200) {
+      onlineServers.push(
+        {
+          "url" : request.value.config.url,
+          "priority": returnServerPriority(request.value.config.url)
+      })
+
+    } else{
+      null;
+    }
+  }
+  return onlineServers
+}
+
+
+  const findServer =  async () => {
+    //gets the online servers with their priorities
+   const onlineServers =  await getOnlineServers();
+   
+   return new Promise((resolve, reject) => {
+     //if we do have any online servers, resolve witht he lowest priority url
+    if(onlineServers.length > 0 ) {
+      const lowestPriorityUrl = getLowestOnlineServerPriority(onlineServers);
+      console.log(lowestPriorityUrl)
+      resolve(lowestPriorityUrl)
+    } else {
+      reject("All servers offline")
+    }
+    
     })
-    // .then(() => {
-    //   return new Promise((resolve, reject) => {
-    //     console.log(goodServers.length)
-    //     if(goodServers.length > 0 ) {
-    //       const lowestPriorityUrl = getLowestPriority(goodServers);
-    //       resolve(lowestPriorityUrl)
-    //     } else {
-    //       reject("All servers offline")
-    //     }
-        
-    //   })
-    // })
-    // .catch(e=>console.log("error", e))
 
     
     
