@@ -1,5 +1,12 @@
 {
+  "scripts": {
+    "test": "jest"
+  },
+  "type":"module",
   "dependencies": {
     "axios": "^0.27.2"
+  },
+  "devDependencies": {
+    "jest": "^28.1.0"
   }
 }

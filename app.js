@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 const serverArray = [
     {
@@ -7,7 +7,7 @@ const serverArray = [
     },
     {
       "url": "http://boldtech.co",
-      "priority": 7
+      "priority": 3
     },
     {
       "url": "http://offline.boldtech.co",
@@ -36,7 +36,7 @@ const getLowestOnlineServerPriority = (onlineServers) => {
   return lowestPriorityServer.url;
 }
 
-const getOnlineServers = async () => {
+const getOnlineServers = async (serverArray) => {
   const onlineServers = [];
   const settledServerCalls = Promise.allSettled([
       axios.get(serverArray[0].url),
@@ -64,15 +64,14 @@ const getOnlineServers = async () => {
 }
 
 
-  const findServer =  async () => {
+  const findServer =  async (serverArray) => {
     //gets the online servers with their priorities
-   const onlineServers =  await getOnlineServers();
+   const onlineServers =  await getOnlineServers(serverArray);
    
    return new Promise((resolve, reject) => {
      //if we do have any online servers, resolve witht he lowest priority url
     if(onlineServers.length > 0 ) {
       const lowestPriorityUrl = getLowestOnlineServerPriority(onlineServers);
-      console.log(lowestPriorityUrl)
       resolve(lowestPriorityUrl)
     } else {
       reject("All servers offline")
@@ -83,4 +82,5 @@ const getOnlineServers = async () => {
     
     
   }
-  findServer()
+  findServer(serverArray)
+ export default findServer;
